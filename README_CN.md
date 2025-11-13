@@ -95,7 +95,6 @@ class DetailViewModel(
     private var startTime = System.nanoTime()
 
     override fun onCleared() {
-        savedState["lastSessionDurationMs"] = (System.nanoTime() - startTime) / 1_000_000
         repo.releaseTempHandle()
         Log.d("DetailViewModel", "onCleared generic cleanup")
         super.onCleared()
@@ -110,14 +109,15 @@ fun CameraScreen(controller: CameraController) {
     DisposableEffect(lifecycle) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_DESTROY) {
-                controller.shutdown()
+                controller.shutdown() // Always release
                 Log.d("CameraScreen", "Camera released on destroy")
             }
         }
         lifecycle.addObserver(observer)
         onDispose { lifecycle.removeObserver(observer) }
     }
-    // preview UI
+
+    // ... UI drawing preview
 }
 ```
 

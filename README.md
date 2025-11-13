@@ -111,9 +111,6 @@ You should still use lifecycle teardown for work that must happen any time the s
 Good fits:
 1. Cancelling coroutines / Rx streams / flows to avoid leaks.
 2. Releasing resources that must not survive (camera, location, sensor listeners, ExoPlayer instance) regardless of exit reason.
-3. Persisting transient in-memory state to a repository or `SavedStateHandle` so recreation restores context (scroll position, draft text).
-4. Flushing caches / closing database cursors.
-5. Recording generic lifetime metrics (total session duration) where user intent is not required.
 
 ### Example: ViewModel cleanup agnostic of explicit exit
 
@@ -125,10 +122,6 @@ class DetailViewModel(private val repo: Repo, private val savedState: SavedState
     val uiState = repo.observeDetail().stateIn(scope, SharingStarted.WhileSubscribed(), initialValue = null)
 
     override fun onCleared() {
-        // Cancel jobs
-        scope.coroutineContext.cancelChildren()
-        // Persist transient state
-        savedState["lastSessionDurationMs"] = (System.nanoTime() - startTime) / 1_000_000
         // Release resource
         repo.releaseTempHandle()
         Log.d("DetailViewModel", "onCleared generic cleanup")
